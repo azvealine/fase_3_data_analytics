@@ -1,61 +1,84 @@
- # Estado de Dados Brasil: SPECS e Dashboards Executivos
+# Estado de Dados Brasil: SPECS Analíticas e Dashboards Executivos
+**Tech Challenge - Fase 3 | Pós-Graduação em Data Analytics**
 
-## 1. Objetivo
+---
 
-Este projeto transforma a base consolidada do State of Data Brasil em **SPECS analíticas** e dashboards executivos para apoiar decisões de tecnologia, pessoas e investimento em Inteligência Artificial.
+## 1. Visão Geral e Objetivo
 
-As análises respondem às seguintes perguntas:
+Este projeto estabelece uma camada analítica robusta a partir da **SOT (Source of Truth)** do *State of Data Brasil*, gerando **7 SPECS analíticas especializadas** em formato Parquet para responder diretamente às 7 perguntas estratégicas de negócio:
 
-- Qual é o cenário de diversidade de gênero nas carreiras de dados?
-- Quais tecnologias apresentam maior adoção?
-- Qual é o índice de adoção de IA e qual é o seu impacto observado?
-- Existem diferenças por região, senioridade ou modelo de trabalho?
-- Quais oportunidades e desafios existem para empresas que investem em Dados e IA?
+1. **Como está estruturado o mercado brasileiro de Dados?**
+2. **Quais perfis profissionais são mais valorizados pelo mercado?**
+3. **Qual é o cenário de diversidade de gênero nas carreiras de dados?**
+4. **Quais tecnologias apresentam maior adoção entre os profissionais?**
+5. **Qual é o índice de adoção de Inteligência Artificial e seu impacto?**
+6. **Existem diferenças relevantes entre regiões, senioridades ou modelos de trabalho?**
+7. **Quais oportunidades e desafios podem ser identificados para empresas que desejam investir em Dados e IA?**
 
-## 2. Fonte oficial e camada analítica
+---
 
-### SOT: Source of Truth
+## 2. Arquitetura Desacoplada da Solução
 
-`dados/base_consolidada.parquet` é a **SOT do projeto**. Ela é a fonte oficial, consolidada e auditável dos respondentes dos surveys.
-
-O notebook analítico **não recria a SOT**. Ele apenas a lê para produzir as estruturas derivadas.
-
-### SPECS analíticas
-
-As SPECS ficam em `dados/bases_analiticas/` e possuem finalidade analítica específica:
-
-| SPEC | Finalidade | Granularidade principal |
-|---|---|---|
-| `spec_respondentes.parquet` | Perfil demográfico, profissional e de trabalho | Um registro por respondente e ano |
-| `spec_adocao_tecnologias.parquet` | Tecnologias, plataformas, cloud e ETL utilizadas | Um registro por respondente, família e tecnologia |
-| `spec_adocao_ia.parquet` | Indicadores de uso de IA e barreiras | Um registro por respondente e indicador |
-| `spec_diversidade_carreira.parquet` | Análises de gênero, raça, formação e carreira | Um registro por respondente e ano |
-| `spec_segmentacao_negocio.parquet` | Segmentação para decisões de negócio | Um registro por combinação de segmentos |
-
-Fluxo de dados:
+Para otimizar a performance e separar as responsabilidades de **Engenharia de Dados (ETL em lote com PySpark)** e **Camada Analítica / Apresentação (Analytics com DuckDB & Plotly)**, o projeto foi estruturado em dois notebooks independentes:
 
 ```text
-base_consolidada.parquet (SOT)
-	|
-	v
-transformação analítica
-	|
-	v
-SPECS em dados/bases_analiticas/
-	|
-	v
-indicadores e dashboards executivos
+dados/base_consolidada.parquet (SOT Auditável - 14.005 respondentes)
+       │
+       ▼ [01_engenharia_specs_pyspark.ipynb] (Apache Spark Engine)
+       ├── 1. spec_respondentes.parquet                  (14.005 linhas, 24 colunas)
+       ├── 2. spec_adocao_tecnologias.parquet            (65.336 linhas, 17 colunas)
+       ├── 3. spec_adocao_ia.parquet                     (30.355 linhas, 18 colunas)
+       ├── 4. spec_diversidade_carreira.parquet          (681 linhas, 10 colunas)
+       ├── 5. spec_segmentacao_negocio.parquet           (1.224 linhas, 11 colunas)
+       ├── 6. spec_dinamica_trabalho_satisfacao.parquet  (14.005 linhas, 13 colunas)
+       └── 7. spec_estrutura_times_empresa.parquet       (10.623 linhas, 9 colunas)
+       │
+       ▼ [02_dashboards_executivos.ipynb] (DuckDB SQL Engine + Plotly - Execução em < 2s)
+7 Dashboards Executivos Interativos com Respostas às 7 Perguntas Estratégicas
 ```
 
-## 3. Notebook recomendado
+---
 
-O notebook principal para apresentação é:
+## 3. Dicionário das SPECS Analíticas (`dados/bases_analiticas/`)
 
-`02_specs_analiticas_dashboards_executivos.ipynb`
+| # | SPEC | Finalidade & Pergunta Atendida | Granularidade | Principais Atributos |
+|---|---|---|---|---|
+| **1** | **`spec_respondentes.parquet`** | Dimensão consolidada do profissional com padronização salarial e macro-cargos (P1 & P2) | 1 registro por respondente/ano | `respondente_key`, `macro_cargo`, `faixa_idade`, `genero`, `nivel`, `salario_estimado_num`, `ordem_salarial`, `modelo_trabalho_resumido` |
+| **2** | **`spec_adocao_tecnologias.parquet`** | Análise granular de adoção de stack tecnológico enriquecida com cargo e remuneração (P4 & P2) | 1 registro por respondente x tecnologia | `familia` (Linguagem, Cloud, Banco, ETL), `tecnologia`, `tecnologia_principal`, `macro_cargo`, `salario_estimado_num` |
+| **3** | **`spec_adocao_ia.parquet`** | Separação explícita de uso ativo vs barreiras organizacionais e governança (P5 & P7) | 1 registro por respondente x indicador | `categoria_ia` (Uso Individual, Uso Corporativo, Barreira), `tipo_registro`, `indicador_ia_label`, `macro_cargo` |
+| **4** | **`spec_diversidade_carreira.parquet`** | Visão agregada especializada em equidade salarial, efeito funil e pay gap (P3) | 1 registro por combinação de gênero, raça, cargo e nível | `macro_cargo`, `nivel`, `genero`, `cor_raca_etnia`, `respondentes`, `salario_medio`, `salario_mediano`, `remoto_pct` |
+| **5** | **`spec_segmentacao_negocio.parquet`** | Segmentação executiva para planejamento de headcount, compensação e IA (P6 & P2) | 1 registro por cluster de negócio | `macro_cargo`, `nivel`, `regiao_onde_mora`, `modelo_trabalho_resumido`, `total_respondentes`, `salario_medio_estimado`, `pct_adotantes_ia`, `pct_mulheres` |
+| **6** | **`spec_dinamica_trabalho_satisfacao.parquet`** | Análise de descompasso entre modelo de trabalho atual vs ideal e retenção de talentos (P6 & P7) | 1 registro por respondente | `modelo_trabalho_resumido`, `modelo_ideal_resumido`, `status_alinhamento`, `oportunidade_buscada`, `salario_estimado_num` |
+| **7** | **`spec_estrutura_times_empresa.parquet`** | Composição, papéis e maturidade organizacional das equipes de dados nas empresas (P1 & P7) | 1 registro por respondente x papel da empresa | `setor`, `papel_na_empresa`, `papel_id`, `presente_na_empresa` |
 
-Ele começa diretamente na camada analítica e contém oito células organizadas em quatro blocos:
+---
 
-1. **Consumo da SOT e geração das SPECS**
-2. **Dashboards executivos de segmentação**
-3. **Evolução anual**
-4. **Resumo para diretoria**
+## 4. Estrutura dos Notebooks
+
+### 🔧 `01_engenharia_specs_pyspark.ipynb` (Engenharia de Dados)
+* Inicializa SparkSession local com suporte a múltiplos núcleos.
+* Lê a SOT (`dados/base_consolidada.parquet`) e aplica normalizações salariais, mapeamento de macro-cargos e modelos de trabalho.
+* Unnesting das 4 famílias de tecnologia e categorização de indicadores de IA.
+* Gera e salva todas as **7 SPECS** na pasta `dados/bases_analiticas/`.
+
+### 📊 `02_dashboards_executivos.ipynb` (Analytics & Apresentação Executiva)
+* Conecta instantaneamente o **DuckDB** às 7 SPECS Parquet pré-geradas (sem overhead de JVM/Spark).
+* **Dashboard 1**: Estrutura do Mercado & Equipes de Dados nas Empresas (P1).
+* **Dashboard 2**: Valorização Salarial por Cargo e Top Stacks com Maior Prêmio (P2).
+* **Dashboard 3**: Diversidade de Gênero, Funil de Senioridade (Teto de Vidro) e Pay Gap (P3).
+* **Dashboard 4**: Panorama Tecnológico Líder por Família (Linguagens, Cloud, Bancos e ETL) (P4).
+* **Dashboard 5**: Maturidade de IA por Setor Econômico e Modalidades de Uso (P5).
+* **Dashboard 6**: Dinâmica de Trabalho, Adoção de IA por Regime e Risco de Retenção (P6).
+* **Dashboard 7**: Diagnóstico de Riscos/Barreiras de IA & Tabela Executiva de Ações Estratégicas (P7).
+
+---
+
+## 5. Como Executar
+
+1. **Ativar o ambiente virtual**:
+   * *PowerShell*: `.\.venv-1\Scripts\Activate.ps1`
+   * *Git Bash*: `source .venv-1/Scripts/activate`
+2. **Executar a Geração das SPECS (quando necessário atualizar dados)**:
+   * Abrir e executar `01_engenharia_specs_pyspark.ipynb`.
+3. **Executar e Apresentar os Dashboards (execução instantânea em < 2s)**:
+   * Abrir e executar `02_dashboards_executivos.ipynb`.
