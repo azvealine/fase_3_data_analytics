@@ -1,5 +1,7 @@
 duckdb
+pandas
 plotly
 sqlglot
 pyarrow
 pyspark
+streamlit

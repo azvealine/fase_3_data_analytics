@@ -1,11 +1,11 @@
-# Estado de Dados Brasil: SPECS Analíticas e Dashboards Executivos
+# Estado de Dados Brasil: SPECS Analíticas, Dashboards Executivos & App Streamlit
 **Tech Challenge - Fase 3 | Pós-Graduação em Data Analytics**
 
 ---
 
 ## 1. Visão Geral e Objetivo
 
-Este projeto estabelece uma camada analítica robusta a partir da **SOT (Source of Truth)** do *State of Data Brasil*, gerando **7 SPECS analíticas especializadas** em formato Parquet para responder diretamente às 7 perguntas estratégicas de negócio:
+Este projeto estabelece uma camada analítica robusta a partir da **SOT (Source of Truth)** do *State of Data Brasil*, gerando **7 SPECS analíticas especializadas** em formato Parquet para responder diretamente às 7 perguntas estratégicas de negócio e traçar a **evolução temporal histórica (2023 ➔ 2024 ➔ 2025)**:
 
 1. **Como está estruturado o mercado brasileiro de Dados?**
 2. **Quais perfis profissionais são mais valorizados pelo mercado?**
@@ -17,9 +17,7 @@ Este projeto estabelece uma camada analítica robusta a partir da **SOT (Source 
 
 ---
 
-## 2. Arquitetura Desacoplada da Solução
-
-Para otimizar a performance e separar as responsabilidades de **Engenharia de Dados (ETL em lote com PySpark)** e **Camada Analítica / Apresentação (Analytics com DuckDB & Plotly)**, o projeto foi estruturado em dois notebooks independentes:
+## 2. Arquitetura da Solução
 
 ```text
 dados/base_consolidada.parquet (SOT Auditável - 14.005 respondentes)
@@ -33,8 +31,10 @@ dados/base_consolidada.parquet (SOT Auditável - 14.005 respondentes)
        ├── 6. spec_dinamica_trabalho_satisfacao.parquet  (14.005 linhas, 13 colunas)
        └── 7. spec_estrutura_times_empresa.parquet       (10.623 linhas, 9 colunas)
        │
-       ▼ [02_dashboards_executivos.ipynb] (DuckDB SQL Engine + Plotly - Execução em < 2s)
-7 Dashboards Executivos Interativos com Respostas às 7 Perguntas Estratégicas
+       ├────────────────────────────────────────────────┐
+       ▼                                                ▼
+[02_dashboards_executivos.ipynb]             [app.py] (Aplicação Web Streamlit)
+(Notebook Executivo Interativo Plotly/DuckDB)   (Painel Web com Filtros, KPIs & Abas)
 ```
 
 ---
@@ -53,32 +53,24 @@ dados/base_consolidada.parquet (SOT Auditável - 14.005 respondentes)
 
 ---
 
-## 4. Estrutura dos Notebooks
+## 4. Como Executar
 
-### 🔧 `01_engenharia_specs_pyspark.ipynb` (Engenharia de Dados)
-* Inicializa SparkSession local com suporte a múltiplos núcleos.
-* Lê a SOT (`dados/base_consolidada.parquet`) e aplica normalizações salariais, mapeamento de macro-cargos e modelos de trabalho.
-* Unnesting das 4 famílias de tecnologia e categorização de indicadores de IA.
-* Gera e salva todas as **7 SPECS** na pasta `dados/bases_analiticas/`.
+### 1. Ativar o Ambiente Virtual:
+* *PowerShell*: `.\.venv-1\Scripts\Activate.ps1`
+* *Git Bash*: `source .venv-1/Scripts/activate`
 
-### 📊 `02_dashboards_executivos.ipynb` (Analytics & Apresentação Executiva)
-* Conecta instantaneamente o **DuckDB** às 7 SPECS Parquet pré-geradas (sem overhead de JVM/Spark).
-* **Dashboard 1**: Estrutura do Mercado & Equipes de Dados nas Empresas (P1).
-* **Dashboard 2**: Valorização Salarial por Cargo e Top Stacks com Maior Prêmio (P2).
-* **Dashboard 3**: Diversidade de Gênero, Funil de Senioridade (Teto de Vidro) e Pay Gap (P3).
-* **Dashboard 4**: Panorama Tecnológico Líder por Família (Linguagens, Cloud, Bancos e ETL) (P4).
-* **Dashboard 5**: Maturidade de IA por Setor Econômico e Modalidades de Uso (P5).
-* **Dashboard 6**: Dinâmica de Trabalho, Adoção de IA por Regime e Risco de Retenção (P6).
-* **Dashboard 7**: Diagnóstico de Riscos/Barreiras de IA & Tabela Executiva de Ações Estratégicas (P7).
+### 2. Rodar a Aplicação Web Streamlit:
+```bash
+streamlit run app.py
+```
+Acesse no seu navegador: `http://localhost:8501`.
+
+### 3. Rodar os Notebooks Jupyter:
+* **Engenharia de Dados (PySpark)**: `jupyter notebook 01_engenharia_specs_pyspark.ipynb`
+* **Dashboards Executivos (< 2s)**: `jupyter notebook 02_dashboards_executivos.ipynb`
 
 ---
 
-## 5. Como Executar
-
-1. **Ativar o ambiente virtual**:
-   * *PowerShell*: `.\.venv-1\Scripts\Activate.ps1`
-   * *Git Bash*: `source .venv-1/Scripts/activate`
-2. **Executar a Geração das SPECS (quando necessário atualizar dados)**:
-   * Abrir e executar `01_engenharia_specs_pyspark.ipynb`.
-3. **Executar e Apresentar os Dashboards (execução instantânea em < 2s)**:
-   * Abrir e executar `02_dashboards_executivos.ipynb`.
+## 5. Relatório Executivo para Liderança (C-Level)
+* Documento consolidado com resumo executivo, diagnóstico aprofundado, análise temporal (2023–2025), matriz SWOT e Roadmap Estratégico em 3 fases:
+  👉 [`relatorio_executivo_tech_challenge_fase_3.md`](../relatorio_executivo_tech_challenge_fase_3.md)
