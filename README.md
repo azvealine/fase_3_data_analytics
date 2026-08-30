@@ -69,8 +69,3 @@ Acesse no seu navegador: `http://localhost:8501`.
 * **Engenharia de Dados (PySpark)**: `jupyter notebook 01_engenharia_specs_pyspark.ipynb`
 * **Dashboards Executivos (< 2s)**: `jupyter notebook 02_dashboards_executivos.ipynb`
 
----
-
-## 5. Relatório Executivo para Liderança (C-Level)
-* Documento consolidado com resumo executivo, diagnóstico aprofundado, análise temporal (2023–2025), matriz SWOT e Roadmap Estratégico em 3 fases:
-  👉 [`relatorio_executivo_tech_challenge_fase_3.md`](../relatorio_executivo_tech_challenge_fase_3.md)
