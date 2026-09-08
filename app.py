@@ -83,7 +83,7 @@ st.markdown('<div class="sub-header">Tech Challenge - Fase 3 | Análise Estraté
 # -----------------------------------------------------------------------------
 # Sidebar & Filtros
 # -----------------------------------------------------------------------------
-st.sidebar.image("https://raw.githubusercontent.com/streamlit/brand/master/streamlit-mark-color.png", width=60)
+st.sidebar.image("Logo Fiap.jpg", width=60)
 st.sidebar.title("🎛️ Filtros Globais")
 
 anos_disponiveis = query_duckdb("SELECT DISTINCT ano_pesquisa FROM spec_respondentes ORDER BY 1")['ano_pesquisa'].tolist()
