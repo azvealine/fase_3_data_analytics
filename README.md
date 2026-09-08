@@ -55,17 +55,24 @@ dados/base_consolidada.parquet (SOT Auditável - 14.005 respondentes)
 
 ## 4. Como Executar
 
-### 1. Ativar o Ambiente Virtual:
-* *PowerShell*: `.\.venv-1\Scripts\Activate.ps1`
+### 1. Criar o Ambiente Virtual:
+
+python -m venv venv
+
+### 2. Ativar o Ambiente Virtual:
+* *PowerShell*: `.\venv\Scripts\activate`
 * *Git Bash*: `source .venv-1/Scripts/activate`
 
-### 2. Rodar a Aplicação Web Streamlit:
+### 3. Instalar bibliotecas:
+* *PowerShell*: `pip install -r .\requirements.txt`
+
+### 4. Rodar a Aplicação Web Streamlit:
 ```bash
 streamlit run app.py
 ```
 Acesse no seu navegador: `http://localhost:8501`.
 
-### 3. Rodar os Notebooks Jupyter:
+### 5. Rodar os Notebooks Jupyter:
 * **Engenharia de Dados (PySpark)**: `jupyter notebook 01_engenharia_specs_pyspark.ipynb`
 * **Dashboards Executivos (< 2s)**: `jupyter notebook 02_dashboards_executivos.ipynb`
 
